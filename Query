@@ -1,0 +1,221 @@
+-- phpMyAdmin-style SQL dump (updated cargo_bookings + missing tables)
+DROP DATABASE IF EXISTS `cargo_db`;
+CREATE DATABASE `cargo_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE `cargo_db`;
+
+-- =============================
+-- Table: users
+-- =============================
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `fullname` varchar(100) NOT NULL,
+  `username` varchar(50) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `role` enum('admin','customer','employee') NOT NULL,
+  `status` enum('active','inactive','suspended') DEFAULT 'active',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `must_change_password` tinyint(1) DEFAULT 1,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `email` (`email`),
+  KEY `idx_users_role` (`role`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- sample users (from your previous dump)
+INSERT INTO `users` (`id`, `fullname`, `username`, `email`, `password_hash`, `role`, `status`, `created_at`, `updated_at`, `must_change_password`) VALUES
+(1, 'Admin User', 'admin', 'admin@cargo.com', 'scrypt:32768:8:1$nF5ofFYYr5gnYLs6$97c2bd06b02cc1b63ad4c5c64e06d33ca497e7fe08276b39acebfe5fd8b324cfc01d1ce56fb90a4d1a3613e610b884f63a8f4b8272086d49b650813b559e6295', 'admin', 'active', '2025-09-21 10:10:53', '2025-09-21 10:10:53', 1),
+(2, 'Jane Employee', 'jane', 'jane@cargo.com', 'scrypt:32768:8:1$JxlqPJY5SJqM6kkY$e547bbb2ffb86827359240f534652b7fd95b5833569ddcf0558ba689109a484b21dec79ce6f1b6df694f590de28bf0ba6372bee56b50baa265d923e2987a3783', 'employee', 'active', '2025-09-21 10:10:53', '2025-09-21 10:10:53', 1),
+(3, 'John Customer', 'john', 'john@cargo.com', 'scrypt:32768:8:1$74NyBRTX6vAAwWjK$b8fb207cb18d7444726b0bfa740894cf88366b50b90bb6d39a8a446db172196e16a15b7d023352be4f4790418136978a064407ac80b6931c4f92be5e2ff8bd62', 'customer', 'active', '2025-09-21 10:10:53', '2025-09-21 10:10:53', 1),
+(4, 'ebin', 'ebin', 'ebin@gmail.com', 'scrypt:32768:8:1$oVJ9OywaS55nvXk1$fefac4e72da9fb90ac286488e13f518a224e5bc69c3ec47cd9f7374f2a3052dc59fc654ae4eb2957d26b293990ffc1c96d4af7eeaee956f0859a15f691cb9ce8', 'customer', 'active', '2025-09-21 10:28:22', '2025-09-21 10:28:22', 1);
+
+-- =============================
+-- Table: customers
+-- =============================
+CREATE TABLE `customers` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `address` text DEFAULT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `customers_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `customers` (`id`, `user_id`, `address`, `phone`, `created_at`, `updated_at`) VALUES
+(1, 3, '456 Oak Avenue', '+0987654321', '2025-09-21 10:10:53', '2025-09-21 10:10:53'),
+(2, 4, NULL, NULL, '2025-09-21 10:28:22', '2025-09-21 10:28:22');
+
+-- =============================
+-- Table: employees
+-- =============================
+CREATE TABLE `employees` (
+  `employee_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `employee_code` varchar(20) NOT NULL,
+  `department` enum('logistics','warehouse','customer_service','management','driver') NOT NULL,
+  `position` varchar(50) DEFAULT NULL,
+  `hire_date` date DEFAULT curdate(),
+  `manager_id` int(11) DEFAULT NULL,
+  `phone_number` varchar(15) DEFAULT NULL,
+  `address` text DEFAULT NULL,
+  `employment_type` enum('Full-time','Contract','Outsourced') DEFAULT 'Full-time',
+  `location` varchar(100) DEFAULT NULL,
+  `salary` decimal(10,2) DEFAULT 0.00,
+  `photo` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`employee_id`),
+  UNIQUE KEY `user_id` (`user_id`),
+  UNIQUE KEY `employee_code` (`employee_code`),
+  KEY `fk_employee_manager` (`manager_id`),
+  CONSTRAINT `fk_employee_manager` FOREIGN KEY (`manager_id`) REFERENCES `employees`(`employee_id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_employee_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `employees` (`employee_id`, `user_id`, `employee_code`, `department`, `position`, `hire_date`, `manager_id`, `phone_number`, `address`, `employment_type`, `location`, `salary`, `photo`, `created_at`, `updated_at`) VALUES
+(1, 2, 'EMP001', 'logistics', 'Logistics Coordinator', '2025-09-21', NULL, '+1234567890', '123 Main St', 'Full-time', 'Warehouse A', 0.00, NULL, '2025-09-21 10:10:53', '2025-09-21 10:10:53');
+
+-- =============================
+-- Table: cargo_bookings (UPDATED)
+-- =============================
+CREATE TABLE `cargo_bookings` (
+  `booking_id` int(11) NOT NULL AUTO_INCREMENT,
+  
+  -- Sender details
+  `sender_name` varchar(100) NOT NULL,
+  `sender_pickup_address` varchar(255) NOT NULL,
+  `sender_phone` varchar(20) NOT NULL,
+  `sender_email` varchar(100) DEFAULT NULL,
+  `sender_company` varchar(100) DEFAULT NULL,
+  
+  -- Receiver details
+  `receiver_name` varchar(100) NOT NULL,
+  `receiver_phone` varchar(20) NOT NULL,
+  `receiver_email` varchar(100) DEFAULT NULL,
+  
+  -- Cargo details
+  `cargo_type` varchar(50) NOT NULL,
+  `cargo_weight` decimal(10,2) NOT NULL,
+  `cargo_description` text DEFAULT NULL,
+  `cargo_price_insurance` decimal(10,2) DEFAULT NULL,
+  `cargo_dimensions` varchar(100) DEFAULT NULL,
+  
+  -- Payment / Cost details
+  `payment_info` varchar(255) DEFAULT NULL,
+  `cost_summary` decimal(10,2) NOT NULL,
+  
+  -- relations (optional)
+  `customer_id` int(11) DEFAULT NULL,
+  `assigned_employee_id` int(11) DEFAULT NULL,
+  
+  -- timestamps
+  `booking_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  
+  PRIMARY KEY (`booking_id`),
+  KEY `customer_id` (`customer_id`),
+  KEY `assigned_employee_id` (`assigned_employee_id`),
+  CONSTRAINT `cargo_bookings_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `customers`(`id`) ON DELETE CASCADE,
+  CONSTRAINT `cargo_bookings_ibfk_2` FOREIGN KEY (`assigned_employee_id`) REFERENCES `employees`(`employee_id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- =============================
+-- Table: invoices
+-- =============================
+CREATE TABLE `invoices` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `booking_id` int(11) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `status` enum('paid','pending','overdue','cancelled') DEFAULT 'pending',
+  `issued_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `paid_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `booking_id` (`booking_id`),
+  CONSTRAINT `invoices_ibfk_1` FOREIGN KEY (`booking_id`) REFERENCES `cargo_bookings`(`booking_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- =============================
+-- Table: notifications
+-- =============================
+CREATE TABLE `notifications` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) DEFAULT NULL,
+  `message` text DEFAULT NULL,
+  `type` enum('email','sms','system') DEFAULT 'system',
+  `status` enum('sent','pending','failed') DEFAULT 'pending',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- =============================
+-- Table: reports
+-- =============================
+CREATE TABLE `reports` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `generated_by` int(11) DEFAULT NULL,
+  `report_type` varchar(50) DEFAULT NULL,
+  `parameters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`parameters`)),
+  `file_path` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `generated_by` (`generated_by`),
+  CONSTRAINT `reports_ibfk_1` FOREIGN KEY (`generated_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- =============================
+-- Table: support_tickets
+-- (kept user references AND added booking_id reference)
+-- =============================
+CREATE TABLE `support_tickets` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `booking_id` int(11) DEFAULT NULL,
+  `user_id` int(11) NOT NULL,
+  `subject` varchar(255) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `status` enum('open','in_progress','closed') DEFAULT 'open',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  KEY `booking_id` (`booking_id`),
+  CONSTRAINT `support_tickets_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+  CONSTRAINT `support_tickets_ibfk_2` FOREIGN KEY (`booking_id`) REFERENCES `cargo_bookings`(`booking_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- =============================
+-- Table: system_logs
+-- =============================
+CREATE TABLE `system_logs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) DEFAULT NULL,
+  `action` varchar(255) DEFAULT NULL,
+  `details` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`details`)),
+  `log_time` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `system_logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- =============================
+-- Table: tracking_updates
+-- =============================
+CREATE TABLE `tracking_updates` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `booking_id` int(11) NOT NULL,
+  `location` varchar(100) DEFAULT NULL,
+  `status` enum('pending','confirmed','dispatched','in_transit','arrived','delivered','cancelled') NOT NULL,
+  `notes` text DEFAULT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `booking_id` (`booking_id`),
+  KEY `idx_tracking_status` (`status`),
+  CONSTRAINT `tracking_updates_ibfk_1` FOREIGN KEY (`booking_id`) REFERENCES `cargo_bookings`(`booking_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Done
+COMMIT;
