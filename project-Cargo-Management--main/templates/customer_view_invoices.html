@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Invoices - CargoPro</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="logo">Customer Portal</div>
+            <ul class="sidebar-nav">
+                <li ><a href="{{ url_for('customer_dashboard') }}">My Shipments</a></li>
+                <li><a href="{{ url_for('customer_book_cargo') }}">Book New Cargo</a></li>
+                <li class="active"> <a href="{{ url_for('customer_view_invoices') }}">View Invoices</a></li>
+                <li><a href="{{ url_for('customer_support') }}">Support</a></li>
+                <li><a href="{{ url_for('customer_profile') }}">Profile</a></li>
+                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+        </aside>
+        <main class="dashboard-main">
+            <header class="dashboard-header">
+                <h2>Welcome, Customer!</h2>
+                <div class="header-icons">
+                    <span>👤</span>
+                </div>
+            </header>
+            <section class="dashboard-content">
+                <h3>My Invoices</h3>
+                 <table>
+                    <thead>
+                        <tr>
+                            <th>Invoice ID</th>
+                            <th>Tracking ID</th>
+                            <th>Amount</th>
+                            <th>Date Issued</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>#INV-0012</td>
+                            <td>#BK1023</td>
+                            <td>$250.00</td>
+                            <td>2025-08-06</td>
+                            <td><span class="status delivered">Paid</span></td>
+                            <td><a href="#">Download</a></td>
+                        </tr>
+                        <tr>
+                            <td>#INV-0010</td>
+                            <td>#BK1015</td>
+                            <td>$150.00</td>
+                            <td>2025-07-21</td>
+                            <td><span class="status delivered">Paid</span></td>
+                            <td><a href="#">Download</a></td>
+                        </tr>
+                         <tr>
+                            <td>#INV-0015</td>
+                            <td>#BK1025</td>
+                            <td>$500.00</td>
+                            <td>2025-09-10</td>
+                            <td><span class="status pending">Unpaid</span></td>
+                            <td><a href="#">Pay Now</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

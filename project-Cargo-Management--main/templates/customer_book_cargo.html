@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book New Cargo - CargoPro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="logo">Customer Portal</div>
+            <ul class="sidebar-nav">
+                <li><a href="{{ url_for('customer_dashboard') }}">My Shipments</a></li>
+                <li class="active"><a href="{{ url_for('customer_book_cargo') }}">Book New Cargo</a></li>
+                <li> <a href="{{ url_for('customer_view_invoices') }}">View Invoices</a></li>
+                <li><a href="{{ url_for('customer_support') }}">Support</a></li>
+                <li><a href="{{ url_for('customer_profile') }}">Profile</a></li>
+                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+        </aside>
+        <main class="dashboard-main">
+            <header class="dashboard-header">
+                <h2>Welcome, {{ session.get('full_name') or 'Customer' }}!</h2>
+                <div class="header-icons">
+                    <span>👤</span>
+                </div>
+            </header>
+            <section class="dashboard-content">
+                <h3>Book a New Shipment</h3>
+                <div class="login-form" style="width: auto; max-width: 800px; padding: 30px;">
+                    <form method="POST" action="{{ url_for('customer_book_cargo') }}">
+                        <h4>Sender's Details</h4>
+                        <div class="input-group">
+                            <label for="senderName">Full Name</label>
+                            <input type="text" id="senderName" name="sender_name" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="senderPickup">Pickup Address</label>
+                            <input type="text" id="senderPickup" name="sender_pickup_address" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="senderPhone">Phone</label>
+                            <input type="text" id="senderPhone" name="sender_phone" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="senderEmail">Email</label>
+                            <input type="email" id="senderEmail" name="sender_email">
+                        </div>
+                        <div class="input-group">
+                            <label for="senderCompany">Company (optional)</label>
+                            <input type="text" id="senderCompany" name="sender_company">
+                        </div>
+
+                        <hr style="margin: 30px 0;">
+
+                        <h4>Recipient's Details</h4>
+                        <div class="input-group">
+                            <label for="receiverName">Full Name</label>
+                            <input type="text" id="receiverName" name="receiver_name" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="receiverPhone">Phone</label>
+                            <input type="text" id="receiverPhone" name="receiver_phone" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="receiverEmail">Email</label>
+                            <input type="email" id="receiverEmail" name="receiver_email">
+                        </div>
+
+                        <hr style="margin: 30px 0;">
+
+                        <h4>Cargo Details</h4>
+                        <div class="input-group">
+                            <label for="cargoType">Cargo Type</label>
+                            <input type="text" id="cargoType" name="cargo_type" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="cargoDesc">Description of Goods</label>
+                            <textarea id="cargoDesc" name="cargo_description" rows="3"></textarea>
+                        </div>
+                        <div class="input-group">
+                            <label for="cargoWeight">Weight (in kg)</label>
+                            <input type="number" id="cargoWeight" name="cargo_weight" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="cargoDimensions">Dimensions</label>
+                            <input type="text" id="cargoDimensions" name="cargo_dimensions">
+                        </div>
+                        <div class="input-group">
+                            <label for="cargoInsurance">Insurance Amount (₹)</label>
+                            <input type="number" id="cargoInsurance" name="cargo_price_insurance" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label for="cargoCost">Total Cost (₹)</label>
+                            <input type="number" id="cargoCost" name="cost_summary" step="0.01" required>
+                        </div>
+
+                        <button type="submit" class="cta-button">Proceed to Payment</button>
+
+                    </form>
+
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+
+</html>
